@@ -1,0 +1,7 @@
+{
+  "name": "agent-ops",
+  "description": "開発を子セッションへ委ねる司令塔と、会話の引き継ぎ",
+  "author": {
+    "name": "Nanase"
+  }
+}

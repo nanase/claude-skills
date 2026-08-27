@@ -1,0 +1,31 @@
+{
+  "name": "nanase",
+  "owner": {
+    "name": "Nanase"
+  },
+  "metadata": {
+    "description": "プロジェクト固有の要素を持たない、汎用の Claude Code スキル置き場"
+  },
+  "plugins": [
+    {
+      "name": "readable",
+      "source": "./plugins/readable",
+      "description": "日本語・ドキュメント・スキル文書の書き方を整える文章作法"
+    },
+    {
+      "name": "flow",
+      "source": "./plugins/flow",
+      "description": "要件定義から PR レビュー対応まで、GitHub 上の開発フローを通すスキル群"
+    },
+    {
+      "name": "ui",
+      "source": "./plugins/ui",
+      "description": "実装した画面の見た目を第三者視点でデザインと突き合わせる"
+    },
+    {
+      "name": "agent-ops",
+      "source": "./plugins/agent-ops",
+      "description": "開発を子セッションへ委ねる司令塔と、会話の引き継ぎ"
+    }
+  ]
+}
