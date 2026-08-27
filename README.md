@@ -28,6 +28,12 @@ claude plugin marketplace add nanase/claude-skills
 
 プロジェクトを信頼した時点で登録・有効化されます。
 
+ただし登録が走るのは信頼を尋ねる場面、つまり対話セッションだけです。`claude -p` のような非対話セッションでは `extraKnownMarketplaces` を書いていても登録されず、スキルは読み込まれません。CI で使うなら明示的に足してください。
+
+```sh
+claude plugin marketplace add https://github.com/nanase/claude-skills.git
+```
+
 ## 中身
 
 | プラグイン | スキル | 使うとき |
