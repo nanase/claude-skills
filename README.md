@@ -7,7 +7,7 @@ Claude Code のスキルを配るマーケットプレイスです。プロジ�
 ## 入れる
 
 ```sh
-claude plugin marketplace add nanase/claude-skills
+claude plugin marketplace add https://github.com/nanase/claude-skills.git
 ```
 
 その後 `/plugin` から要るものを選びます。プロジェクトで固定するなら `.claude/settings.json` に書きます。
@@ -16,7 +16,8 @@ claude plugin marketplace add nanase/claude-skills
 {
   "extraKnownMarketplaces": {
     "nanase": {
-      "source": { "source": "url", "url": "https://github.com/nanase/claude-skills.git" }
+      "source": { "source": "git", "url": "https://github.com/nanase/claude-skills.git" },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
@@ -47,7 +48,9 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 
 ## 更新
 
-`plugin.json` に `version` を書いていません。commit すると、その SHA が版として配られます。利用側は自動更新で受け取ります。
+`plugin.json` に `version` を書いていません。commit すると、その SHA が版として配られます。
+
+ただし公式以外の marketplace は**自動更新が既定で無効**です。降ってくるようにするには、`extraKnownMarketplaces` の各エントリに `"autoUpdate": true` を書くか、`/plugin` の Marketplaces タブで有効にしてください。どちらもしない場合は、`claude plugin marketplace update nanase` を叩くまで古いままです。
 
 ## 派生先で育ったスキルを戻す
 
