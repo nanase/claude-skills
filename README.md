@@ -46,6 +46,8 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 
 呼び出しは `/flow:dev-flow` の形です。名前が衝突しなければ `/dev-flow` でも通ります。
 
+`readable` にはコマンドが 1 つあります。`/readable:ng <語>` と打つと、その語を「使わない語」として `.claude/NG.md` に記録します。会話は止まらず、言い換えも聞かれません。readable-japanese が語彙を見るとき、このファイルを併せて参照します。
+
 ## 更新
 
 `plugin.json` に `version` を書いていません。commit すると、その SHA が版として配られます。
