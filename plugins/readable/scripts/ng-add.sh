@@ -28,58 +28,42 @@ added=0
 updated=0
 skipped=0
 
-# タブは IFS の空白文字で、read に任せると連続したタブが 1 つに畳まれる。
-# 空の言い換えが消えて文脈が繰り上がるため、行を自分で切り分ける。
-split_field() {
-  local rest=$1
-  if [ "${rest#*	}" = "$rest" ]; then
-    printf '%s
+trim() { printf '%s' "$1" | sed 's/^ *//; s/ *$//'; }
 
-' "$rest"
-  else
-    printf '%s
-%s
-' "${rest%%	*}" "${rest#*	}"
-  fi
-}
-
+# タブは IFS の空白文字なので、read の分割に任せると連続したタブが 1 つに畳まれる。
+# 空の言い換えが消えて文脈が繰り上がるため、行は自分で切り分ける。
 while IFS= read -r line || [ -n "${line:-}" ]; do
-  line=$(printf '%s' "$line" | tr -d '')
+  line=${line%$'\r'}
   [ -z "$line" ] && continue
 
-  word=${line%%	*}
-  rest=${line#*	}
+  word=${line%%$'\t'*}
+  rest=${line#*$'\t'}
   [ "$rest" = "$line" ] && rest=""
-  replacement=${rest%%	*}
-  context=${rest#*	}
+  replacement=${rest%%$'\t'*}
+  context=${rest#*$'\t'}
   [ "$context" = "$rest" ] && context=""
 
-  word=$(printf '%s' "$word" | sed 's/^ *//; s/ *$//')
+  word=$(trim "$word")
   [ -z "$word" ] && continue
-  replacement=$(printf '%s' "$replacement" | tr -d '|' | sed 's/^ *//; s/ *$//')
-  context=$(printf '%s' "$context" | tr -d '|' | sed 's/^ *//; s/ *$//')
+  replacement=$(trim "$(printf '%s' "$replacement" | tr -d '|')")
+  context=$(trim "$(printf '%s' "$context" | tr -d '|')")
 
   if grep -qF "| $word |" "$target"; then
-    # 言い換えが空のまま記録されている語は、後から言い換えだけを埋められる。
+    # 言い換えが空のまま記録した語は、後から言い換えだけを埋められる。
     if [ -n "$replacement" ] && grep -qF "| $word |  |" "$target"; then
       sed -i "s#^| $word |  |#| $word | $replacement |#" "$target"
-      printf '言い換えを追記: %s → %s
-' "$word" "$replacement"
+      printf '言い換えを追記: %s → %s\n' "$word" "$replacement"
       updated=$((updated + 1))
     else
-      printf '既出: %s
-' "$word"
+      printf '既出: %s\n' "$word"
       skipped=$((skipped + 1))
     fi
     continue
   fi
 
-  printf '| %s | %s | %s | %s |
-' "$word" "$replacement" "$context" "$today" >> "$target"
-  printf '追記: %s
-' "$word"
+  printf '| %s | %s | %s | %s |\n' "$word" "$replacement" "$context" "$today" >> "$target"
+  printf '追記: %s\n' "$word"
   added=$((added + 1))
 done
 
-printf '%s へ %d 件追記、%d 件に言い換えを補い、%d 件は既出
-' "${target#"$root/"}" "$added" "$updated" "$skipped"
+printf '%s へ %d 件追記、%d 件に言い換えを補い、%d 件は既出\n' "${target#"$root/"}" "$added" "$updated" "$skipped"
