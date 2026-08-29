@@ -53,10 +53,19 @@ name: dev-flow
    - `/code-review` の effort は自動発火なら medium を上限とし、深く見たいときだけ明示依頼で上げる
 9. 提出
    - commit→push→PR
+   - PR は draft で起票する。レビュー bot は draft を見ないので、CI を直す push でレビュー回数を消費しない
    - 分類ラベルを付ける
    - Issue なしタスクは `feature/` 経路で代替し、受け入れ条件を PR 本文に明記
 10. マージ可能まで
-    - PR 作成後に `/loop` で `pr-review-loop` を回す
+    - CI が落ちたら draft のまま直す
+      - draft 中の push はレビュー回数を消費しないので、ここで何度直してもよい
+    - CI がグリーンになり PR 本文が確定してから Ready にする
+      - Ready 化がレビュー bot の第 1 巡であり、レビュアーへの通知でもある
+      - Ready にできるのは自分の PR のうち 1 本だけである。`gh pr list --author @me --state open --json number,title,isDraft` で他に Ready の PR が無いか確かめる
+        - 無ければそのまま Ready にする
+        - 有ればどちらを先に通すかをユーザーへ確認する
+        - 委譲を受けて動いているときは、ユーザーではなく委譲元の許可に従う
+    - Ready 化の後に `/loop` で `pr-review-loop` を回す
     - CI 失敗対応と指摘の規約還元を内包
 
 予定した人ゲートは自動で正否を判定できない 2 段（要件・設計）に限る。ただし [ESCALATION.md](ESCALATION.md) の STOP 条件は全段階で適用し、該当すれば実装中でも止めて確認する。
