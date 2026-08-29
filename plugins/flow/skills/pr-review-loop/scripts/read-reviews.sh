@@ -23,7 +23,7 @@ echo "=== 0. 現在の HEAD ==="
 gh pr view "$PR" --json headRefOid -q .headRefOid
 
 # 空ボディの review（approval / changes requested）も出す。最新レビューが HEAD を対象か
-# 判定するのに state・commit_id・submitted_at が要るので、body の有無で絞らない。
+# 判定するのに state・commit_id・submitted_at が必要なので、body の有無で絞らない。
 echo "=== 1. review 本文（PR review の body） ==="
 gh api "repos/$R/pulls/$PR/reviews" --paginate \
   --jq '.[] | "--- [\(.user.login) / \(.state)] id:\(.id) commit:\(.commit_id) at:\(.submitted_at)\n\(.body // "")\n"'
