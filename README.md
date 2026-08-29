@@ -4,7 +4,7 @@ Claude Code のスキルを配るマーケットプレイスです。プロジ�
 
 いずれのスキルもプロジェクト固有の名称・設定を含みません。
 
-## 入れる
+## 導入
 
 ```sh
 claude plugin marketplace add https://github.com/nanase/claude-skills.git
@@ -35,7 +35,7 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 claude plugin marketplace add https://github.com/nanase/claude-skills.git
 ```
 
-## 中身
+## 収録スキル
 
 | プラグイン | スキル | 使うとき |
 | --- | --- | --- |
@@ -50,7 +50,7 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 
 ## 更新
 
-`plugin.json` に `version` を書いていません。commit すると、その SHA が版として配られます。
+`plugin.json` に `version` を書いていません。commit すると、その SHA がバージョンとして配られます。
 
 ただし公式以外の marketplace は**自動更新が既定で無効**です。降ってくるようにするには、`extraKnownMarketplaces` の各エントリに `"autoUpdate": true` を書くか、`/plugin` の Marketplaces タブで有効にしてください。どちらもしない場合は、`claude plugin marketplace update nanase` を叩くまで古いままです。
 
