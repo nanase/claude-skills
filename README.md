@@ -29,6 +29,8 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 
 プロジェクトを信頼した時点で登録・有効化されます。
 
+このリポジトリ自身も `.claude/settings.json` で `readable` を有効にしています。配っているスキルを、この置き場の文書の推敲にそのまま使うためです。
+
 ただし登録が走るのは信頼を尋ねる場面、つまり対話セッションだけです。`claude -p` のような非対話セッションでは `extraKnownMarketplaces` を書いていても登録されず、スキルは読み込まれません。CI で使うなら明示的に足してください。
 
 ```sh
