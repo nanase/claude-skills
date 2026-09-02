@@ -43,7 +43,7 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 | --- | --- | --- |
 | `readable` | readable-japanese, readable-docs, readable-skill | 文章を書く。常に必要 |
 | `flow` | dev-flow, requirements-define, design-proposal, convention-review, reproduce-diagnose, pr-review-loop, label-apply | GitHub で開発する |
-| `ui` | visual-review | 画面がある |
+| `ui` | design-options, visual-review | 画面がある |
 | `agent-ops` | hq, handoff | 開発を子セッションへ委ねる |
 
 呼び出しは `/flow:dev-flow` の形です。名前が衝突しなければ `/dev-flow` でも通ります。
