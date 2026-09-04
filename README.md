@@ -29,7 +29,7 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 
 プロジェクトを信頼した時点で登録・有効化されます。
 
-このリポジトリ自身も `.claude/settings.json` で `readable` を有効にしています。配布しているスキルを、この置き場の文書の推敲にそのまま使うためです。
+このリポジトリ自身も `.claude/settings.json` で `readable` と `code` を有効にしています。配布しているスキルを、この置き場の文書の推敲とスクリプトの実装にそのまま使うためです。
 
 ただし登録が走るのは信頼を尋ねる場面、つまり対話セッションだけです。`claude -p` のような非対話セッションでは `extraKnownMarketplaces` を書いていても登録されず、スキルは読み込まれません。CI で使うなら明示的に足してください。
 
@@ -42,6 +42,7 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 | プラグイン | スキル | 使うとき |
 | --- | --- | --- |
 | `readable` | readable-japanese, readable-docs, readable-skill | 文章を書く。常に必要 |
+| `code` | script-encoding | 非 ASCII を出すスクリプトを書く |
 | `flow` | dev-flow, requirements-define, design-proposal, convention-review, reproduce-diagnose, pr-review-loop, label-apply | GitHub で開発する |
 | `ui` | design-options, visual-review | 画面がある |
 | `agent-ops` | hq, handoff | 開発を子セッションへ委ねる |
