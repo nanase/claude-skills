@@ -133,6 +133,12 @@ def build_evidence_corpus(issue_comments: list[dict], inline_comments: list[dict
 
 
 def main() -> None:
+    # Windows では標準入出力がパイプへ繋がれるとロケールのコードページ（日本語環境なら
+    # cp932）で開かれ、cp932 に無い文字（— や絵文字）を読み書きすると落ちる。
+    sys.stdin.reconfigure(encoding="utf-8", errors="replace")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
     data = json.load(sys.stdin)
     reviews = data.get("reviews", [])
     inline_comments = data.get("inline_comments", [])
