@@ -13,6 +13,11 @@
       "description": "日本語・ドキュメント・スキル文書の書き方を整える文章作法"
     },
     {
+      "name": "code",
+      "source": "./plugins/code",
+      "description": "環境の違いでコードが壊れないようにする書き方"
+    },
+    {
       "name": "flow",
       "source": "./plugins/flow",
       "description": "要件定義から PR レビュー対応まで、GitHub 上の開発フローを通すスキル群"

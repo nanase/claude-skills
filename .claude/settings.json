@@ -6,6 +6,7 @@
     }
   },
   "enabledPlugins": {
-    "readable@nanase": true
+    "readable@nanase": true,
+    "code@nanase": true
   }
 }

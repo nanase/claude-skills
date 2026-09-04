@@ -121,8 +121,11 @@ def skip_line(line: str) -> bool:
 
 
 def main() -> None:
+    # Windows では標準入出力がパイプへ繋がれるとロケールのコードページ（日本語環境なら
+    # cp932）で開かれ、cp932 に無い文字（— や絵文字）を読み書きすると落ちる。
     sys.stdin.reconfigure(encoding="utf-8", errors="replace")
-    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
     pairs: Counter[tuple[str, str]] = Counter()
     sources: dict[tuple[str, str], str] = {}
