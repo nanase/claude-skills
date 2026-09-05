@@ -1,0 +1,1061 @@
+<title>文言レビュー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f2f3f6;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --line: #dfe2e9;
+  --line-strong: #c7ccd8;
+  --ink: #171b23;
+  --ink-2: #4d5566;
+  --ink-3: #7b8496;
+  --accent: #3b5bdb;
+  --accent-soft: #e7ecfd;
+  --keep: #14713f;
+  --keep-soft: #e2f3e9;
+  --stay: #5b6474;
+  --stay-soft: #eaecf1;
+  --edit: #b7410e;
+  --edit-soft: #fdeadf;
+  --hold: #8f6108;
+  --hold-soft: #fbf0d9;
+  --shadow: 0 1px 2px rgba(23, 27, 35, .06), 0 8px 24px -16px rgba(23, 27, 35, .35);
+
+  --sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  --serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101319;
+    --surface: #191d26;
+    --surface-2: #1f2430;
+    --line: #2c323f;
+    --line-strong: #3d4554;
+    --ink: #e7eaf0;
+    --ink-2: #a6aebd;
+    --ink-3: #798294;
+    --accent: #93a9ff;
+    --accent-soft: #1e2742;
+    --keep: #62d69a;
+    --keep-soft: #142b20;
+    --stay: #98a2b3;
+    --stay-soft: #232833;
+    --edit: #fb9a5f;
+    --edit-soft: #331d10;
+    --hold: #ecc158;
+    --hold-soft: #2e2514;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101319;
+  --surface: #191d26;
+  --surface-2: #1f2430;
+  --line: #2c323f;
+  --line-strong: #3d4554;
+  --ink: #e7eaf0;
+  --ink-2: #a6aebd;
+  --ink-3: #798294;
+  --accent: #93a9ff;
+  --accent-soft: #1e2742;
+  --keep: #62d69a;
+  --keep-soft: #142b20;
+  --stay: #98a2b3;
+  --stay-soft: #232833;
+  --edit: #fb9a5f;
+  --edit-soft: #331d10;
+  --hold: #ecc158;
+  --hold-soft: #2e2514;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+kbd {
+  font-family: var(--mono);
+  font-size: .68rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: .2em .38em;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink-2);
+}
+
+/* ---------- header ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 14px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.masthead h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: .02em;
+}
+.masthead__sub {
+  font-size: .8rem;
+  color: var(--ink-3);
+}
+.masthead__spacer { flex: 1 1 auto; }
+
+.tally {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: .78rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.meter {
+  width: 132px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+  display: flex;
+}
+.meter span { height: 100%; transition: width .18s ease; }
+.meter .m-keep { background: var(--keep); }
+.meter .m-stay { background: var(--stay); }
+.meter .m-edit { background: var(--edit); }
+.meter .m-hold { background: var(--hold); }
+
+.toolrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+}
+.filters { display: flex; gap: 4px; }
+.filter {
+  font: inherit;
+  font-size: .8rem;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.filter:hover { background: var(--surface-2); color: var(--ink); }
+.filter[aria-pressed="true"] {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+  font-weight: 500;
+}
+.filter .count {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--ink-3);
+  margin-left: 5px;
+}
+
+.btn {
+  font: inherit;
+  font-size: .8rem;
+  padding: 5px 13px;
+  border-radius: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--ink-3); }
+.btn--ghost { border-color: transparent; color: var(--ink-3); }
+.btn--ghost:hover { border-color: var(--line-strong); color: var(--ink-2); }
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+:root[data-theme="dark"] .btn--primary,
+:root:not([data-theme="light"]) .btn--primary { color: #0e1220; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .btn--primary { color: #fff; }
+}
+.btn--primary:hover { filter: brightness(1.06); border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: .74rem;
+  color: var(--ink-3);
+}
+.hint .sep { color: var(--line-strong); }
+
+/* ---------- main ---------- */
+
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 22px 24px 45vh;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: .82rem;
+  margin-bottom: 20px;
+}
+.banner--done {
+  border-color: var(--keep);
+  background: var(--keep-soft);
+  color: var(--ink);
+}
+.banner code {
+  font-family: var(--mono);
+  font-size: .78rem;
+  background: var(--bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.group { margin-bottom: 30px; }
+.group__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--ink-3);
+}
+.group__head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.cards { display: flex; flex-direction: column; gap: 10px; }
+
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 15px 18px 15px 20px;
+  box-shadow: var(--shadow);
+  scroll-margin: 132px;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 10px; bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: transparent;
+  transition: background .15s ease;
+}
+.card[data-cursor="true"] { border-color: var(--line-strong); }
+.card[data-cursor="true"]::before { background: var(--accent); top: 0; bottom: 0; border-radius: 10px 0 0 10px; }
+.card[data-status="adopted"]::before { background: var(--keep); }
+.card[data-status="kept"]::before { background: var(--stay); }
+.card[data-status="edited"]::before { background: var(--edit); }
+.card[data-status="held"]::before { background: var(--hold); }
+.card[data-status="adopted"], .card[data-status="kept"], .card[data-status="edited"], .card[data-status="held"] {
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+.card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+.slug {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--ink-3);
+}
+.chip {
+  font-size: .7rem;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+}
+.card[data-status="adopted"] .chip, .card[data-status="kept"] .chip, .card[data-status="edited"] .chip, .card[data-status="held"] .chip { background: var(--surface); }
+
+.subject {
+  font-size: 1.28rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0 0 5px;
+  text-wrap: balance;
+}
+.usage {
+  font-size: .82rem;
+  color: var(--ink-2);
+  margin: 0 0 12px;
+  max-width: 62ch;
+}
+
+.proposal {
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 7px 7px 0;
+  padding: 9px 13px;
+  margin-bottom: 13px;
+}
+.proposal__label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 2px;
+}
+.proposal__text { font-size: 1.05rem; font-weight: 500; line-height: 1.55; }
+.proposal--none {
+  border-left-color: var(--line-strong);
+  background: var(--surface-2);
+}
+.proposal--none .proposal__label { color: var(--ink-3); }
+.proposal--none .proposal__text { font-size: .84rem; font-weight: 400; color: var(--ink-2); }
+
+.actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.act {
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.act kbd { border-color: var(--line); background: var(--surface-2); }
+.act--keep:hover { border-color: var(--keep); background: var(--keep-soft); color: var(--keep); }
+.act--stay:hover { border-color: var(--stay); background: var(--stay-soft); color: var(--stay); }
+.act--edit:hover { border-color: var(--edit); background: var(--edit-soft); color: var(--edit); }
+.act--hold:hover { border-color: var(--hold); background: var(--hold-soft); color: var(--hold); }
+
+.editor { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.editor textarea {
+  font-family: var(--sans);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--edit);
+  border-radius: 8px;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 3.4em;
+  width: 100%;
+}
+.editor__row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.editor__hint { font-size: .74rem; color: var(--ink-3); }
+.counter { font-family: var(--mono); font-size: .74rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+.noteline {
+  margin-top: 11px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.noteline input {
+  font: inherit;
+  font-size: .84rem;
+  flex: 1;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  padding: 6px 11px;
+}
+.noteline .notelabel { font-size: .74rem; color: var(--hold); font-weight: 500; white-space: nowrap; }
+
+/* 判定済みの畳んだ表示 */
+.verdict { display: flex; align-items: flex-start; gap: 11px; }
+.verdict__tag {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 5px;
+  white-space: nowrap;
+  margin-top: 3px;
+}
+.card[data-status="adopted"] .verdict__tag { background: var(--keep-soft); color: var(--keep); }
+.card[data-status="kept"] .verdict__tag { background: var(--stay-soft); color: var(--stay); }
+.card[data-status="edited"] .verdict__tag { background: var(--edit-soft); color: var(--edit); }
+.card[data-status="held"] .verdict__tag { background: var(--hold-soft); color: var(--hold); }
+.verdict__body { flex: 1; min-width: 0; }
+.verdict__text { font-size: 1rem; font-weight: 500; line-height: 1.5; }
+.verdict__from {
+  font-size: .76rem;
+  color: var(--ink-3);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.verdict__note { font-size: .8rem; color: var(--ink-2); margin-top: 4px; }
+
+.empty {
+  text-align: center;
+  color: var(--ink-3);
+  font-size: .86rem;
+  padding: 40px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 560px) {
+  .subject { font-size: 1.14rem; }
+  main { padding: 18px 14px 40vh; }
+  .topbar__inner { padding: 12px 14px 0; }
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar__inner">
+    <div class="masthead">
+      <h1 id="reviewTitle"></h1>
+      <span class="masthead__sub" id="reviewSubject"></span>
+      <span class="masthead__spacer"></span>
+      <div class="tally">
+        <span id="tallyText">0 / 18</span>
+        <span class="meter" aria-hidden="true">
+          <span class="m-keep" id="meterKeep" style="width:0%"></span>
+          <span class="m-stay" id="meterStay" style="width:0%"></span>
+          <span class="m-edit" id="meterEdit" style="width:0%"></span>
+          <span class="m-hold" id="meterHold" style="width:0%"></span>
+        </span>
+      </div>
+    </div>
+    <div class="toolrow">
+      <div class="filters" id="filters"></div>
+      <span class="masthead__spacer"></span>
+      <span class="hint">
+        <kbd>J</kbd><kbd>K</kbd> 移動 <span class="sep">·</span>
+        <kbd>A</kbd> 修正なし <span class="sep">·</span>
+        <kbd>S</kbd> 案を採用 <span class="sep">·</span>
+        <kbd>D</kbd> 自分で直す <span class="sep">·</span>
+        <kbd>F</kbd> 保留 <span class="sep">·</span>
+        <kbd>U</kbd> 取消
+      </span>
+      <button class="btn btn--ghost" id="btnReset" type="button">すべて消す</button>
+      <button class="btn" id="btnCopy" type="button">結果をコピー</button>
+      <button class="btn btn--primary" id="btnDone" type="button">レビュー完了</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="banner" id="banner">
+    <span id="bannerText">読み込み中…</span>
+  </div>
+  <div id="groups"></div>
+</main>
+
+<script>
+"use strict";
+
+// ここから下の 2 つだけを、レビューする対象に書き換える。
+// 上の <title> も対象が分かる名前へ変えること。アーティファクトの名前になる。
+
+const REVIEW = {
+  title: "文言レビュー",     // ページ見出し
+  subject: "対象の名前",     // 見出しの右に出る補足。件数は自動で付く
+};
+
+// 1 件 = 判定させる 1 つの文言。
+//   id        判定を紐づける鍵。連番でよい
+//   group     区分。画面名・章名など。この単位で区切られる
+//   kind      種別。ボタン・見出し・用語など
+//   text      対象の文言。元のまま正確に写す
+//   usage     使用状況。判定に必要なことだけを 1〜2 文で
+//   proposal  修正案。直す必要がなければ null
+const ITEMS = [
+  { id: "t-001", group: "申請フォーム", kind: "ボタン",
+    text: "送信する",
+    usage: "入力を終えて上長へ提出する主ボタン。押すと確定し、下書きへは戻せない。",
+    proposal: "申請を提出" },
+  { id: "t-002", group: "申請一覧", kind: "列見出し",
+    text: "ステータス",
+    usage: "各申請が今どの段階にあるかを示す列。下書き・承認待ち・支払済が入る。",
+    proposal: null },
+];
+
+const STATUS = {
+  adopted: { tag: "採用", label: "採用" },
+  kept: { tag: "修正なし", label: "修正なし" },
+  edited: { tag: "修正", label: "修正" },
+  held: { tag: "保留", label: "保留" },
+};
+
+const state = new Map();
+const cards = new Map();
+let filter = "all";
+let cursor = 0;
+let db = null;
+let done = false;
+
+const $ = (id) => document.getElementById(id);
+const groupsEl = $("groups");
+
+/* ---------- 保存 ---------- */
+
+function localKey() { return "text-review-proto"; }
+
+function persist(id) {
+  const v = state.get(id);
+  const body = v
+    ? { status: v.status, text: v.text, note: v.note || "", updatedAt: new Date().toISOString() }
+    : null;
+  try {
+    const all = {};
+    for (const [k, val] of state) all[k] = val;
+    localStorage.setItem(localKey(), JSON.stringify(all));
+  } catch (e) { /* プライベートウィンドウなどでは保存できない */ }
+  if (!db) return;
+  const ref = db.doc("decisions/" + id);
+  (body ? ref.set(body) : ref.delete()).catch(() => setBanner("保存できませんでした。通信を確かめてください。", "warn"));
+}
+
+async function loadSaved() {
+  if (db) {
+    try {
+      const snap = await db.collection("decisions").get();
+      if (!snap.empty) {
+        for (const d of snap.docs) {
+          const v = d.data();
+          if (v && v.status) state.set(d.id, { status: v.status, text: v.text || "", note: v.note || "" });
+        }
+        return true;
+      }
+    } catch (e) { /* 読めなければローカルへ落ちる */ }
+  }
+  try {
+    const raw = localStorage.getItem(localKey());
+    if (raw) {
+      const all = JSON.parse(raw);
+      let any = false;
+      for (const k of Object.keys(all)) { state.set(k, all[k]); any = true; }
+      return any;
+    }
+  } catch (e) { /* 無視 */ }
+  return false;
+}
+
+/* ---------- 描画 ---------- */
+
+function decidedText(item, v) {
+  if (v.status === "held") return item.text;
+  return v.text || item.text;
+}
+
+function buildCard(item) {
+  const el = document.createElement("article");
+  el.className = "card";
+  el.dataset.id = item.id;
+  el.tabIndex = -1;
+  el.addEventListener("mousedown", () => setCursorTo(item.id, false));
+  cards.set(item.id, el);
+  paintCard(item.id);
+  return el;
+}
+
+function paintCard(id, opts) {
+  const item = ITEMS.find((i) => i.id === id);
+  const el = cards.get(id);
+  const v = state.get(id);
+  el.dataset.status = v ? v.status : "pending";
+
+  if (v && !(opts && opts.expand)) {
+    const s = STATUS[v.status];
+    const changed = v.status !== "held" && v.text !== item.text;
+    el.innerHTML = `
+      <div class="verdict">
+        <span class="verdict__tag">${s.tag}</span>
+        <div class="verdict__body">
+          <div class="verdict__text">${esc(decidedText(item, v))}</div>
+          ${changed ? `<div class="verdict__from">元: ${esc(item.text)}</div>` : ""}
+          ${v.status === "kept" && item.proposal ? `<div class="verdict__from">見送った案: ${esc(item.proposal)}</div>` : ""}
+          ${v.status === "held" ? noteFieldHtml(v.note) : (v.note ? `<div class="verdict__note">${esc(v.note)}</div>` : "")}
+        </div>
+        <button class="btn btn--ghost" data-act="undo" type="button">やり直す</button>
+      </div>`;
+    if (v.status === "held") wireNote(el, id);
+  } else {
+    const hasProp = !!item.proposal;
+    el.innerHTML = `
+      <div class="card__meta">
+        <span class="slug">${item.id}</span>
+        <span class="chip">${esc(item.group)}</span>
+        <span class="chip">${esc(item.kind)}</span>
+      </div>
+      <p class="subject">${esc(item.text)}</p>
+      <p class="usage">${esc(item.usage)}</p>
+      <div class="proposal${hasProp ? "" : " proposal--none"}">
+        <span class="proposal__label">${hasProp ? "修正案" : "修正案なし"}</span>
+        <div class="proposal__text">${hasProp ? esc(item.proposal) : "このままで問題なさそうです。"}</div>
+      </div>
+      <div class="actions">
+        <button class="act act--stay" data-act="stay" type="button">修正なし<kbd>A</kbd></button>
+        ${hasProp ? `<button class="act act--keep" data-act="adopt" type="button">修正案を採用<kbd>S</kbd></button>` : ""}
+        <button class="act act--edit" data-act="edit" type="button">自分で直す<kbd>D</kbd></button>
+        <button class="act act--hold" data-act="hold" type="button">保留<kbd>F</kbd></button>
+      </div>
+      <div class="editor" hidden>
+        <textarea rows="2" aria-label="${item.id} の文言"></textarea>
+        <div class="editor__row">
+          <button class="btn btn--primary" data-act="commit" type="button">この文言にする</button>
+          <button class="btn btn--ghost" data-act="cancel" type="button">やめる</button>
+          <span class="editor__hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> で確定 <span class="sep">·</span> <kbd>Esc</kbd> で戻る</span>
+          <span class="masthead__spacer"></span>
+          <span class="counter"></span>
+        </div>
+      </div>`;
+    wireEditor(el, item);
+  }
+  el.querySelectorAll("[data-act]").forEach((b) => {
+    b.addEventListener("click", () => act(id, b.dataset.act));
+  });
+}
+
+function noteFieldHtml(note) {
+  return `<div class="noteline">
+    <span class="notelabel">保留の理由</span>
+    <input type="text" data-note value="${esc(note || "")}" placeholder="任意。ここに書いたものが Claude Code に渡ります">
+  </div>`;
+}
+
+function wireNote(el, id) {
+  const input = el.querySelector("[data-note]");
+  if (!input) return;
+  const save = () => {
+    const v = state.get(id);
+    if (!v) return;
+    v.note = input.value.trim();
+    persist(id);
+  };
+  input.addEventListener("blur", save);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); save(); input.blur(); }
+  });
+}
+
+function wireEditor(el, item) {
+  const ta = el.querySelector("textarea");
+  const counter = el.querySelector(".counter");
+  const sync = () => { counter.textContent = ta.value.length + " 字"; };
+  ta.addEventListener("input", sync);
+  ta.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { e.preventDefault(); closeEditor(item.id); }
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); act(item.id, "commit"); }
+  });
+  sync();
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function render() {
+  const seen = [];
+  for (const item of ITEMS) {
+    if (!seen.includes(item.group)) seen.push(item.group);
+  }
+  for (const g of seen) {
+    const sec = document.createElement("section");
+    sec.className = "group";
+    sec.dataset.group = g;
+    const h = document.createElement("h2");
+    h.className = "group__head";
+    h.textContent = g;
+    sec.appendChild(h);
+    const wrap = document.createElement("div");
+    wrap.className = "cards";
+    for (const item of ITEMS.filter((i) => i.group === g)) wrap.appendChild(buildCard(item));
+    sec.appendChild(wrap);
+    groupsEl.appendChild(sec);
+  }
+  const empty = document.createElement("p");
+  empty.className = "empty";
+  empty.id = "emptyMsg";
+  empty.hidden = true;
+  empty.textContent = "この絞り込みに当てはまる文言はありません。";
+  groupsEl.appendChild(empty);
+}
+
+/* ---------- 操作 ---------- */
+
+function visibleIds() {
+  return ITEMS.filter((i) => matches(i.id)).map((i) => i.id);
+}
+
+function matches(id) {
+  const v = state.get(id);
+  if (filter === "all") return true;
+  if (filter === "pending") return !v;
+  return v && v.status === filter;
+}
+
+function setCursorTo(id, scroll) {
+  const ids = visibleIds();
+  const idx = ids.indexOf(id);
+  if (idx < 0) return;
+  cursor = idx;
+  paintCursor(scroll !== false);
+}
+
+function paintCursor(scroll) {
+  const ids = visibleIds();
+  if (cursor >= ids.length) cursor = Math.max(0, ids.length - 1);
+  for (const [id, el] of cards) el.dataset.cursor = String(ids[cursor] === id);
+  const el = cards.get(ids[cursor]);
+  if (el && scroll) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function moveCursor(delta) {
+  const ids = visibleIds();
+  if (!ids.length) return;
+  cursor = Math.min(ids.length - 1, Math.max(0, cursor + delta));
+  paintCursor(true);
+}
+
+function currentId() {
+  const ids = visibleIds();
+  return ids[cursor];
+}
+
+function openEditor(id) {
+  const item = ITEMS.find((i) => i.id === id);
+  const v = state.get(id);
+  if (v) { paintCard(id, { expand: true }); }
+  const el = cards.get(id);
+  const ed = el.querySelector(".editor");
+  if (!ed) return;
+  const ta = ed.querySelector("textarea");
+  ta.value = (v && v.status === "edited" && v.text) || item.proposal || item.text;
+  ed.hidden = false;
+  ta.dispatchEvent(new Event("input"));
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
+function closeEditor(id) {
+  paintCard(id);
+  setCursorTo(id, false);
+  cards.get(id).focus({ preventScroll: true });
+}
+
+function act(id, kind) {
+  const item = ITEMS.find((i) => i.id === id);
+  if (kind === "adopt") {
+    // 案がない項目では A も「現行のまま」を指す
+    state.set(id, item.proposal
+      ? { status: "adopted", text: item.proposal, note: "" }
+      : { status: "kept", text: item.text, note: "" });
+  } else if (kind === "stay") {
+    state.set(id, { status: "kept", text: item.text, note: "" });
+  } else if (kind === "edit") {
+    openEditor(id);
+    return;
+  } else if (kind === "commit") {
+    const ta = cards.get(id).querySelector("textarea");
+    const value = ta.value.trim();
+    if (!value) { ta.focus(); return; }
+    state.set(id, { status: value === item.text ? "kept" : "edited", text: value, note: "" });
+  } else if (kind === "hold") {
+    const prev = state.get(id);
+    state.set(id, { status: "held", text: item.text, note: (prev && prev.note) || "" });
+  } else if (kind === "undo") {
+    state.delete(id);
+    persist(id);
+    paintCard(id);
+    setCursorTo(id, false);
+    updateHeader();
+    applyFilter();
+    return;
+  } else if (kind === "cancel") {
+    closeEditor(id);
+    return;
+  }
+  persist(id);
+  paintCard(id);
+  updateHeader();
+  applyFilter();
+  advanceFrom(id);
+  if (done) { done = false; setBanner(defaultBannerText(), "info"); }
+}
+
+// 判定したカードが絞り込みで消える場合は、その位置に繰り上がってきた次の 1 件へ。
+// 残る場合は 1 つ先へ進める。
+function advanceFrom(id) {
+  const ids = visibleIds();
+  if (!ids.length) return;
+  const idx = ids.indexOf(id);
+  cursor = idx >= 0 ? Math.min(ids.length - 1, idx + 1) : Math.min(cursor, ids.length - 1);
+  paintCursor(true);
+}
+
+/* ---------- ヘッダー ---------- */
+
+function counts() {
+  let adopted = 0, kept = 0, edited = 0, held = 0;
+  for (const [, v] of state) {
+    if (v.status === "adopted") adopted++;
+    else if (v.status === "kept") kept++;
+    else if (v.status === "edited") edited++;
+    else if (v.status === "held") held++;
+  }
+  const decided = adopted + kept + edited + held;
+  return { adopted, kept, edited, held, decided, pending: ITEMS.length - decided };
+}
+
+function updateHeader() {
+  const c = counts();
+  const total = ITEMS.length;
+  $("tallyText").textContent = c.decided + " / " + total;
+  $("meterKeep").style.width = (c.adopted / total * 100) + "%";
+  $("meterStay").style.width = (c.kept / total * 100) + "%";
+  $("meterEdit").style.width = (c.edited / total * 100) + "%";
+  $("meterHold").style.width = (c.held / total * 100) + "%";
+  const defs = [
+    ["all", "すべて", total],
+    ["pending", "未処理", c.pending],
+    ["adopted", "採用", c.adopted],
+    ["kept", "修正なし", c.kept],
+    ["edited", "修正", c.edited],
+    ["held", "保留", c.held],
+  ];
+  const box = $("filters");
+  if (!box.children.length) {
+    for (const [key, label] of defs) {
+      const b = document.createElement("button");
+      b.className = "filter";
+      b.type = "button";
+      b.dataset.filter = key;
+      b.innerHTML = `${label}<span class="count"></span>`;
+      b.addEventListener("click", () => { filter = key; cursor = 0; updateHeader(); applyFilter(); paintCursor(true); });
+      box.appendChild(b);
+    }
+  }
+  for (const [key, , n] of defs) {
+    const b = box.querySelector(`[data-filter="${key}"]`);
+    b.setAttribute("aria-pressed", String(filter === key));
+    b.querySelector(".count").textContent = n;
+  }
+  $("btnDone").disabled = c.decided === 0;
+}
+
+function applyFilter() {
+  let shown = 0;
+  for (const item of ITEMS) {
+    const ok = matches(item.id);
+    cards.get(item.id).hidden = !ok;
+    if (ok) shown++;
+  }
+  for (const sec of groupsEl.querySelectorAll(".group")) {
+    const any = [...sec.querySelectorAll(".card")].some((c) => !c.hidden);
+    sec.hidden = !any;
+  }
+  $("emptyMsg").hidden = shown > 0;
+  paintCursor(false);
+}
+
+function defaultBannerText() {
+  const c = counts();
+  if (c.pending === 0) return "全 " + ITEMS.length + " 件を判定しました。「レビュー完了」を押すと、結果が Claude Code から読める状態になります。";
+  return "残り " + c.pending + " 件。判定するたび自動で保存されるので、途中で閉じても続きから戻れます。";
+}
+
+function setBanner(text, kind) {
+  const b = $("banner");
+  b.className = "banner" + (kind === "done" ? " banner--done" : "");
+  $("bannerText").textContent = text;
+}
+
+/* ---------- 完了・書き出し ---------- */
+
+function resultPayload() {
+  const items = ITEMS.map((item) => {
+    const v = state.get(item.id);
+    return {
+      id: item.id,
+      group: item.group,
+      kind: item.kind,
+      original: item.text,
+      proposal: item.proposal,
+      status: v ? v.status : "pending",
+      final: v && v.status !== "held" ? decidedText(item, v) : null,
+      changed: !!(v && v.status !== "held" && decidedText(item, v) !== item.text),
+      note: (v && v.note) || null,
+    };
+  });
+  return { total: ITEMS.length, counts: counts(), items };
+}
+
+function scrollToTop() {
+  const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
+}
+
+async function finish() {
+  const c = counts();
+  if (c.pending > 0 && !confirm("未処理が " + c.pending + " 件あります。このまま完了しますか？")) return;
+  done = true;
+  const payload = { done: true, completedAt: new Date().toISOString(), total: ITEMS.length, counts: c };
+  if (db) {
+    try {
+      await db.doc("session/state").set(payload);
+      setBanner("レビュー完了。Claude Code に「レビューが終わった」と伝えてください。結果はそのまま読めます。", "done");
+      scrollToTop();
+      return;
+    } catch (e) { /* 下の案内へ落ちる */ }
+  }
+  setBanner("レビュー完了。保存先につながっていないので、「結果をコピー」で JSON を取って Claude Code に貼ってください。", "done");
+  scrollToTop();
+}
+
+async function copyResult() {
+  const text = JSON.stringify(resultPayload(), null, 2);
+  try {
+    await navigator.clipboard.writeText(text);
+    setBanner("結果 " + ITEMS.length + " 件を JSON でコピーしました。", "info");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); setBanner("結果を JSON でコピーしました。", "info"); }
+    catch (e2) { setBanner("コピーできませんでした。ブラウザの許可を確かめてください。", "warn"); }
+    ta.remove();
+  }
+}
+
+function resetAll() {
+  if (!confirm("すべての判定を消しますか？")) return;
+  const ids = [...state.keys()];
+  state.clear();
+  try { localStorage.removeItem(localKey()); } catch (e) { /* 無視 */ }
+  if (db) for (const id of ids) db.doc("decisions/" + id).delete().catch(() => {});
+  for (const id of ids) paintCard(id);
+  done = false;
+  filter = "all";
+  cursor = 0;
+  updateHeader();
+  applyFilter();
+  setBanner(defaultBannerText(), "info");
+}
+
+/* ---------- キーボード ---------- */
+
+function typing(e) {
+  const t = e.target;
+  return t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable);
+}
+
+document.addEventListener("keydown", (e) => {
+  if (typing(e) || e.metaKey || e.ctrlKey || e.altKey) return;
+  const id = currentId();
+  const key = e.key.toLowerCase();
+  if (key === "j" || key === "arrowdown") { e.preventDefault(); moveCursor(1); return; }
+  if (key === "k" || key === "arrowup") { e.preventDefault(); moveCursor(-1); return; }
+  if (!id) return;
+  if (key === "a") { e.preventDefault(); act(id, "stay"); }
+  else if (key === "s") {
+    // 修正案がない項目に S のボタンはないので、キーも効かせない
+    e.preventDefault();
+    if (ITEMS.find((i) => i.id === id).proposal) act(id, "adopt");
+  }
+  else if (key === "d") { e.preventDefault(); act(id, "edit"); }
+  else if (key === "f") { e.preventDefault(); act(id, "hold"); }
+  else if (key === "u") { e.preventDefault(); if (state.get(id)) act(id, "undo"); }
+});
+
+/* ---------- 起動 ---------- */
+
+$("reviewTitle").textContent = REVIEW.title;
+$("reviewSubject").textContent = REVIEW.subject + " ／ " + ITEMS.length + " 件";
+
+render();
+updateHeader();
+applyFilter();
+paintCursor(false);
+setBanner("読み込み中…", "info");
+
+(async () => {
+  try { db = await claude.use("db"); } catch (e) { db = null; }
+  await loadSaved();
+  for (const item of ITEMS) paintCard(item.id);
+  updateHeader();
+  applyFilter();
+  paintCursor(false);
+  setBanner(defaultBannerText(), "info");
+})();
+
+$("btnDone").addEventListener("click", finish);
+$("btnCopy").addEventListener("click", copyResult);
+$("btnReset").addEventListener("click", resetAll);
+</script>

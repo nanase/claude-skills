@@ -41,13 +41,15 @@ claude plugin marketplace add https://github.com/nanase/claude-skills.git
 
 | プラグイン | スキル | 使うとき |
 | --- | --- | --- |
-| `readable` | readable-japanese, readable-docs, readable-skill | 文章を書く。常に必要 |
+| `readable` | readable-japanese, readable-docs, readable-skill, text-review | 文章を書く。常に必要 |
 | `code` | script-encoding | 非 ASCII を出すスクリプトを書く |
 | `flow` | dev-flow, requirements-define, design-proposal, convention-review, reproduce-diagnose, pr-review-loop, label-apply | GitHub で開発する |
 | `ui` | design-options, visual-review | 画面がある |
 | `agent-ops` | hq, handoff | 開発を子セッションへ委ねる |
 
 呼び出しは `/flow:dev-flow` の形です。名前が衝突しなければ `/dev-flow` でも通ります。
+
+`readable` の text-review だけ特性が違います。直す文言が多いとき、対象と修正案を並べたページを公開し、採用・修正・保留をまとめて判定してもらう仕組みです。判定は 1 件ずつ保存され、結果はページから直接読み戻せます。
 
 `readable` にはコマンドが 1 つあります。`/readable:ng <語>` と打つと、その語を「使わない語」として `.claude/NG.md` に記録します。会話は止まらず、言い換えも聞かれません。readable-japanese が語彙を見るとき、このファイルを併せて参照します。
 
