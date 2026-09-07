@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # pr-findings.sh — PR の指摘（インライン・review 本文の Outside diff / Nitpick）を
-# 漏れなく列挙し、未対応だけを抽出する。read-reviews.sh の後継。
+# 漏れなく列挙し、未対応だけを抽出する。所在をそのまま出す read-reviews.sh とは役割が違い、
+# 両方を順に使う。
 #
 # 使い方: pr-findings.sh [PR番号]
 #   PR 番号を省略すると現在のブランチの PR を使う。

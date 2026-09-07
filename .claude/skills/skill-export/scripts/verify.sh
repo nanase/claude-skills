@@ -13,7 +13,8 @@
 #     5. スクリプトの構文
 #     6. 箇条書きの体裁（装飾の太字、末尾の「。」）
 #
-# 依存: bash / grep / find。python3 があれば .py のコンパイルも見る。
+# 依存: bash と標準的な UNIX ツール（find・grep・sed・awk）。python3 があれば .py の
+# コンパイルも見る。
 set -euo pipefail
 
 BASE=""

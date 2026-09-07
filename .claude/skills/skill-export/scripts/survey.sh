@@ -9,7 +9,7 @@
 #     - 固有結合の疑い（置き場の外へ出るリンク、リポジトリ名・owner 名の出現）
 #   クローンは消さない。出力されたパスへそのまま diff -ru を掛けられる。
 #
-# 依存: gh / git。
+# 依存: gh / git。ほかに標準的な UNIX ツール（find・grep・sed・awk・diff・mktemp）を使う。
 set -euo pipefail
 
 USAGE="使い方: survey.sh [-b <ベースのスキル置き場>] <owner/repo>..."

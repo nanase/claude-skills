@@ -64,7 +64,7 @@ def parse_items(section_text: str) -> list[dict]:
 
     items = []
     current_file = None
-    pending = None  # (line_range, tags, start_of_body)
+    pending = None  # (file_path, item_match, body_start)
     for pos, kind, val in events:
         if kind == "file":
             current_file = val
