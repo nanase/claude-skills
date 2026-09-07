@@ -1,6 +1,6 @@
 {
   "name": "code",
-  "description": "環境の違いでコードが壊れないようにする書き方",
+  "description": "環境の違いで壊れず、コメントを溜め込まないコードの書き方",
   "author": {
     "name": "Nanase"
   }
