@@ -349,7 +349,6 @@ main {
   font-size: .82rem;
   color: var(--ink-2);
   margin: 0 0 12px;
-  max-width: 62ch;
 }
 
 .proposal {
@@ -371,9 +370,9 @@ main {
 .proposal--none {
   border-left-color: var(--line-strong);
   background: var(--surface-2);
+  padding: 6px 13px;
 }
-.proposal--none .proposal__label { color: var(--ink-3); }
-.proposal--none .proposal__text { font-size: .84rem; font-weight: 400; color: var(--ink-2); }
+.proposal--none .proposal__label { color: var(--ink-3); margin-bottom: 0; }
 
 .actions { display: flex; gap: 7px; flex-wrap: wrap; }
 .act {
@@ -442,6 +441,7 @@ main {
   white-space: nowrap;
   margin-top: 3px;
 }
+.card__meta .verdict__tag { margin-top: 0; }
 .card[data-status="adopted"] .verdict__tag { background: var(--keep-soft); color: var(--keep); }
 .card[data-status="kept"] .verdict__tag { background: var(--stay-soft); color: var(--stay); }
 .card[data-status="edited"] .verdict__tag { background: var(--edit-soft); color: var(--edit); }
@@ -551,6 +551,9 @@ const STATUS = {
 };
 
 const state = new Map();
+// 判定を取り消しても消さない下書き。人が書いたものを勝手に捨てない
+const drafts = new Map();  // 自分で直した文言
+const notes = new Map();   // 保留の理由
 const cards = new Map();
 let filter = "all";
 let cursor = 0;
@@ -580,16 +583,21 @@ function persist(id) {
 }
 
 async function loadSaved() {
+  // 前の回の判定が保存先に残っていることがある。今回の id 以外は数に入れない
+  const known = new Set(ITEMS.map((i) => i.id));
+  const take = (id, v) => {
+    if (!known.has(id) || !v || !v.status) return false;
+    state.set(id, { status: v.status, text: v.text || "", note: v.note || "" });
+    if (v.status === "edited" && v.text) drafts.set(id, v.text);
+    if (v.note) notes.set(id, v.note);
+    return true;
+  };
   if (db) {
     try {
       const snap = await db.collection("decisions").get();
-      if (!snap.empty) {
-        for (const d of snap.docs) {
-          const v = d.data();
-          if (v && v.status) state.set(d.id, { status: v.status, text: v.text || "", note: v.note || "" });
-        }
-        return true;
-      }
+      let any = false;
+      for (const d of snap.docs) { if (take(d.id, d.data())) any = true; }
+      if (any) return true;
     } catch (e) { /* 読めなければローカルへ落ちる */ }
   }
   try {
@@ -597,7 +605,7 @@ async function loadSaved() {
     if (raw) {
       const all = JSON.parse(raw);
       let any = false;
-      for (const k of Object.keys(all)) { state.set(k, all[k]); any = true; }
+      for (const k of Object.keys(all)) { if (take(k, all[k])) any = true; }
       return any;
     }
   } catch (e) { /* 無視 */ }
@@ -622,15 +630,45 @@ function buildCard(item) {
   return el;
 }
 
+function metaHtml(item, tag) {
+  return `<div class="card__meta">
+      ${tag ? `<span class="verdict__tag">${tag}</span>` : ""}
+      <span class="slug">${item.id}</span>
+      <span class="chip">${esc(item.group)}</span>
+      <span class="chip">${esc(item.kind)}</span>
+      ${tag ? `<span class="masthead__spacer"></span>
+      <button class="btn btn--ghost" data-act="undo" type="button">やり直す</button>` : ""}
+    </div>`;
+}
+
+function detailHtml(item) {
+  const hasProp = !!item.proposal;
+  return `
+      <p class="subject">${esc(item.text)}</p>
+      <p class="usage">${esc(item.usage)}</p>
+      <div class="proposal${hasProp ? "" : " proposal--none"}">
+        <span class="proposal__label">${hasProp ? "修正案" : "修正案なし"}</span>
+        ${hasProp ? `<div class="proposal__text">${esc(item.proposal)}</div>` : ""}
+      </div>`;
+}
+
 function paintCard(id, opts) {
   const item = ITEMS.find((i) => i.id === id);
   const el = cards.get(id);
   const v = state.get(id);
+  const expand = !!(opts && opts.expand);
   el.dataset.status = v ? v.status : "pending";
 
-  if (v && !(opts && opts.expand)) {
+  if (v && v.status === "held" && !expand) {
+    // 保留は畳まない。次の回へ回すかを決めるのに、使用状況と修正案が要る
+    el.innerHTML = `
+      ${metaHtml(item, STATUS.held.tag)}
+      ${detailHtml(item)}
+      ${noteFieldHtml(v.note)}`;
+    wireNote(el, id);
+  } else if (v && !expand) {
     const s = STATUS[v.status];
-    const changed = v.status !== "held" && v.text !== item.text;
+    const changed = v.text !== item.text;
     el.innerHTML = `
       <div class="verdict">
         <span class="verdict__tag">${s.tag}</span>
@@ -638,25 +676,15 @@ function paintCard(id, opts) {
           <div class="verdict__text">${esc(decidedText(item, v))}</div>
           ${changed ? `<div class="verdict__from">元: ${esc(item.text)}</div>` : ""}
           ${v.status === "kept" && item.proposal ? `<div class="verdict__from">見送った案: ${esc(item.proposal)}</div>` : ""}
-          ${v.status === "held" ? noteFieldHtml(v.note) : (v.note ? `<div class="verdict__note">${esc(v.note)}</div>` : "")}
+          ${v.note ? `<div class="verdict__note">${esc(v.note)}</div>` : ""}
         </div>
         <button class="btn btn--ghost" data-act="undo" type="button">やり直す</button>
       </div>`;
-    if (v.status === "held") wireNote(el, id);
   } else {
     const hasProp = !!item.proposal;
     el.innerHTML = `
-      <div class="card__meta">
-        <span class="slug">${item.id}</span>
-        <span class="chip">${esc(item.group)}</span>
-        <span class="chip">${esc(item.kind)}</span>
-      </div>
-      <p class="subject">${esc(item.text)}</p>
-      <p class="usage">${esc(item.usage)}</p>
-      <div class="proposal${hasProp ? "" : " proposal--none"}">
-        <span class="proposal__label">${hasProp ? "修正案" : "修正案なし"}</span>
-        <div class="proposal__text">${hasProp ? esc(item.proposal) : "このままで問題なさそうです。"}</div>
-      </div>
+      ${metaHtml(item, null)}
+      ${detailHtml(item)}
       <div class="actions">
         <button class="act act--stay" data-act="stay" type="button">修正なし<kbd>A</kbd></button>
         ${hasProp ? `<button class="act act--keep" data-act="adopt" type="button">修正案を採用<kbd>S</kbd></button>` : ""}
@@ -694,8 +722,10 @@ function wireNote(el, id) {
     const v = state.get(id);
     if (!v) return;
     v.note = input.value.trim();
+    notes.set(id, v.note);
     persist(id);
   };
+  input.addEventListener("input", () => notes.set(id, input.value));
   input.addEventListener("blur", save);
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); save(); input.blur(); }
@@ -706,7 +736,7 @@ function wireEditor(el, item) {
   const ta = el.querySelector("textarea");
   const counter = el.querySelector(".counter");
   const sync = () => { counter.textContent = ta.value.length + " 字"; };
-  ta.addEventListener("input", sync);
+  ta.addEventListener("input", () => { sync(); drafts.set(item.id, ta.value); });
   ta.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { e.preventDefault(); closeEditor(item.id); }
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); act(item.id, "commit"); }
@@ -794,7 +824,7 @@ function openEditor(id) {
   const ed = el.querySelector(".editor");
   if (!ed) return;
   const ta = ed.querySelector("textarea");
-  ta.value = (v && v.status === "edited" && v.text) || item.proposal || item.text;
+  ta.value = drafts.get(id) || (v && v.status === "edited" && v.text) || item.proposal || item.text;
   ed.hidden = false;
   ta.dispatchEvent(new Event("input"));
   ta.focus();
@@ -823,10 +853,10 @@ function act(id, kind) {
     const ta = cards.get(id).querySelector("textarea");
     const value = ta.value.trim();
     if (!value) { ta.focus(); return; }
+    drafts.set(id, value);
     state.set(id, { status: value === item.text ? "kept" : "edited", text: value, note: "" });
   } else if (kind === "hold") {
-    const prev = state.get(id);
-    state.set(id, { status: "held", text: item.text, note: (prev && prev.note) || "" });
+    state.set(id, { status: "held", text: item.text, note: notes.get(id) || "" });
   } else if (kind === "undo") {
     state.delete(id);
     persist(id);
@@ -861,7 +891,9 @@ function advanceFrom(id) {
 
 function counts() {
   let adopted = 0, kept = 0, edited = 0, held = 0;
-  for (const [, v] of state) {
+  for (const item of ITEMS) {
+    const v = state.get(item.id);
+    if (!v) continue;
     if (v.status === "adopted") adopted++;
     else if (v.status === "kept") kept++;
     else if (v.status === "edited") edited++;
@@ -998,6 +1030,8 @@ function resetAll() {
   if (!confirm("すべての判定を消しますか？")) return;
   const ids = [...state.keys()];
   state.clear();
+  drafts.clear();
+  notes.clear();
   try { localStorage.removeItem(localKey()); } catch (e) { /* 無視 */ }
   if (db) for (const id of ids) db.doc("decisions/" + id).delete().catch(() => {});
   for (const id of ids) paintCard(id);
