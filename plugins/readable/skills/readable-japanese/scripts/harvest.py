@@ -27,8 +27,17 @@ TAIL = re.compile(r"(である|です|ます|する|した|とする|となる|�
 
 CJK = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
 
+# 表のセルへ入れる前に落とす制御文字。差分の中身がそのまま端末へ出るため、
+# 端末制御シーケンスと表の崩れを防ぐ。
+CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]")
+
 # 語の内部として左右に広げてよい文字。ひらがなは送り仮名・助詞なので境界にする。
 WORDISH = re.compile(r"[\u30a0-\u30ff\u4e00-\u9fffA-Za-z0-9_]")
+
+
+def cell(text: str) -> str:
+    """Markdown の表のセルにする。制御文字を落とし、| をエスケープする。"""
+    return CONTROL.sub("\ufffd", text).replace("|", "\\|")
 
 
 def is_candidate(old: str, new: str) -> bool:
@@ -188,7 +197,7 @@ def main() -> None:
     print("| --- | --- | --- | --- |")
     for (old, new), count in pairs.most_common():
         origin = sources.get((old, new), "")[:26]
-        print(f"| {count} | {old} | {new} | {origin} |")
+        print(f"| {count} | {cell(old)} | {cell(new)} | {cell(origin)} |")
 
 
 if __name__ == "__main__":
