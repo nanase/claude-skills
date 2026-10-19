@@ -20,7 +20,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 command -v python3 >/dev/null 2>&1 || {
-  echo "python3 が見つかりません。read-reviews.sh の目視確認へフォールバックしてください。" >&2
+  echo "python3 が見つかりません。read-reviews.sh の区画 1〜3 の目視確認へフォールバックしてください。" >&2
+  echo "区画 1 で指摘を列挙し、対応記録のフィンガープリントは区画 2・3 から拾う。" >&2
+  echo "インライン指摘の解決状態は gh api graphql の reviewThreads.isResolved で別途確認する。" >&2
+  echo "確認しきれない項目が 1 つでも残る間は完了と判定しないこと。" >&2
   exit 3
 }
 R="$(gh repo view --json nameWithOwner -q .nameWithOwner)"

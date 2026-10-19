@@ -3,7 +3,10 @@
 #
 # 使い方: read-reviews.sh [PR番号]
 #   PR 番号を省略すると現在のブランチの PR を使う。出力は 4 区画:
-#     0. 現在の HEAD — 1〜2 の commit_id と突き合わせて staleness を判定する。
+#     0. 現在の HEAD と CodeRabbit のコミットステータス — 1〜2 の commit_id と突き合わせて
+#        staleness を判定する。CodeRabbit は指摘 0 件のとき review 本文を作らず、この
+#        コミットステータスの更新とサマリ（区画 3）の書き換えだけで完了を示すため、
+#        review 本文の有無だけで「未レビュー」と判定しない（CODERABBIT.md 参照）。
 #     1. review 本文 — CodeRabbit は nitpick を本文内の <details> に畳む。区画内にそのまま出るので開いて読む。
 #     2. インラインコメント — path:line と id。返信は reply.sh にこの id を渡す。
 #     3. サマリ / PR コメント — 先頭サマリは上書き更新されるので毎回読み直す。
@@ -19,8 +22,11 @@ PR="${1:-$(gh pr view --json number -q .number)}"
 
 # 最新レビューが現在の HEAD を対象かは、ここで出す HEAD の SHA と各区画の commit_id を
 # 突き合わせて判定する。省略・切り詰めがあると判定できない。
-echo "=== 0. 現在の HEAD ==="
-gh pr view "$PR" --json headRefOid -q .headRefOid
+HEAD_SHA="$(gh pr view "$PR" --json headRefOid -q .headRefOid)"
+echo "=== 0. 現在の HEAD と CodeRabbit のコミットステータス ==="
+echo "$HEAD_SHA"
+gh api "repos/$R/commits/$HEAD_SHA/statuses" --jq \
+  'map(select(.context == "CodeRabbit")) | if length == 0 then "CodeRabbit: (ステータスなし)" else "CodeRabbit: \(.[0].state) / \(.[0].description) (updated_at:\(.[0].updated_at))" end'
 
 # 空ボディの review（approval / changes requested）も出す。最新レビューが HEAD を対象か
 # 判定するのに state・commit_id・submitted_at が必要なので、body の有無で絞らない。

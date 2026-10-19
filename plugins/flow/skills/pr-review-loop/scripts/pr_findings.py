@@ -6,6 +6,10 @@ CodeRabbit のレビュー本文は Outside diff range comments / Nitpick commen
 そのため「最新レビューに出ない = 対応済み」は誤りで、全レビュー本文の和集合を
 「一度でも指摘された項目」として扱い、対応記録（PR コメントでのフィンガープリント
 言及）の有無で対応済みを判定する。
+
+節の見出しとファイルの示し方には形式の揺れがある。取りこぼすと未対応 0 件と誤って数える。
+見つかっている形式は ../CODERABBIT.md にまとめてある。形式を足したら pr_findings_test.py に
+検体を足し、python3 pr_findings_test.py で全形式が通ることを確かめる。
 """
 import json
 import re
@@ -13,21 +17,56 @@ import sys
 from html import unescape
 
 FINGERPRINT_RE = re.compile(r"<!-- cr-comment:v1:([0-9a-f]+) -->")
-ITEM_RE = re.compile(r"^`(\d+(?:-\d+)?)`:\s*(.*)$", re.MULTILINE)
-FILE_RE = re.compile(r"^<summary>([^<]+?) \(\d+\)</summary>", re.MULTILINE)
-TITLE_RE = re.compile(r"^\*\*(.+?)\*\*\s*$", re.MULTILINE)
-SEVERITY_RE = re.compile(r"_([🔴🟠🟡🟢🔵][^_]*)_")
+# 項目の先頭行は 2 形式ある。「`行`: 観点 | 重大度」の 1 行か、「`パス:行`」だけの行の次に
+# 「観点 | 重大度」の行が続く形である。後者のパスは `<summary>` 末尾の `<code>` と違って
+# ディレクトリまで含むので、こちらを優先する。本文で関連箇所を `パス:行` だけの行で示すことがあり、
+# それを次の項目と取り違えないよう、後者は次の行が「観点 | ...」のときに限る。
+# 観点・重大度は、強調が斜体（`_観点_ | _重大度_`）の形と、太字（`**観点** | **重大度**`）の形がある。
+# 太字の形では、`<summary>` の強調も `<em>` から `<strong>` に変わる。
+EMPHASIS = r"(?:_|\*\*)"
+ITEM_RE = re.compile(
+    r"^`(?:(\d+(?:-\d+)?)`:[ \t]*(.*)"
+    rf"|(\S+?):(\d+(?:-\d+)?)`[ \t]*\n({EMPHASIS}[^\n]*{EMPHASIS}[ \t]*\|[^\n]*))$",
+    re.MULTILINE,
+)
+# 見出しは行頭の太字で書かれる。1 行を占めることもあれば、同じ行に本文が続くこともある。
+TITLE_RE = re.compile(r"^\*\*(.+?)\*\*", re.MULTILINE)
+SEVERITY_RE = re.compile(rf"{EMPHASIS}([🔴🟠🟡🟢🔵][^_*]*){EMPHASIS}")
+
+# 節の中の対象ファイルも 2 形式ある。畳み形式はファイルごとに `<summary>パス (N)</summary>` で
+# まとめるが、太字形式にまとめ役は無く、項目ごとの `<summary>` 末尾に `<code>パス:行</code>` が
+# 入る（ファイル名だけのこともあり、そのときは ITEM_RE の先頭行が持つパスを使う）。
+# その `<summary>` には重大度や見出しも並び、見出し自体が `<code>` を含むことがあるため、
+# 末尾に接した最後の `<code>` だけをパスとして拾う。
+# 件数は `(N)` の形と `: N` の形がある。
+COUNT = r"(?: \(\d+\)|: \d+)"
+FILE_RE = re.compile(rf"^<summary>([^<]+?){COUNT}</summary>", re.MULTILINE)
+FILE_CODE_RE = re.compile(r"^<summary>.*<code>([^<>]+?):\d+(?:-\d+)?</code></summary>", re.MULTILINE)
+
+# 節の見出しには 2 形式ある。CodeRabbit は畳み（`<details>`）で出すこともあれば、
+# 引用ブロックの中の太字で出すこともある。
+# 引用の `> ` は strip_blockquote が先に落とすので、ここでは考えなくてよい。
+SECTION_LABELS = {
+    "outside_diff": "⚠️ Outside diff range comments",
+    "nitpick": "🧹 Nitpick comments",
+}
+
+
+def heading_pattern(label: str) -> str:
+    """節見出しの 2 形式（畳みの summary・太字）どちらにも当たる断片を返す。"""
+    escaped = re.escape(label)
+    return rf"(?:<summary>{escaped}|\*\*{escaped})"
+
 
 SECTION_MARKERS = {
-    "outside_diff": re.compile(r"<summary>⚠️ Outside diff range comments \(\d+\)</summary>"),
-    "nitpick": re.compile(r"<summary>🧹 Nitpick comments \(\d+\)</summary>"),
+    kind: re.compile(heading_pattern(label) + COUNT) for kind, label in SECTION_LABELS.items()
 }
-STOP_MARKERS = [
+# 節の終わりは、次の節の見出しか、レビュー本文の他の畳みの始まりで判定する。
+STOP_MARKERS = [re.compile(heading_pattern(label)) for label in SECTION_LABELS.values()] + [
     re.compile(p)
     for p in (
-        r"<summary>⚠️ Outside diff range comments",
-        r"<summary>🧹 Nitpick comments",
         r"<summary>🤖 Prompt for all review comments with AI agents",
+        r"<summary>🤖 Prompt to fix review comments",
         r"<summary>🪄 Autofix",
         r"<summary>ℹ️ Review info",
         r"<summary>📥 Commits",
@@ -56,15 +95,16 @@ def section_span(text: str, marker: "re.Pattern[str]") -> "tuple[int, int] | Non
 
 def parse_items(section_text: str) -> list[dict]:
     events = []
-    for m in FILE_RE.finditer(section_text):
-        events.append((m.start(), "file", m.group(1).strip()))
+    for file_re in (FILE_RE, FILE_CODE_RE):
+        for m in file_re.finditer(section_text):
+            events.append((m.start(), "file", m.group(1).strip()))
     for m in ITEM_RE.finditer(section_text):
         events.append((m.start(), "item", m))
     events.sort(key=lambda e: e[0])
 
     items = []
     current_file = None
-    pending = None  # (file_path, item_match, body_start)
+    pending = None  # (current_file, ITEM_RE の Match, 項目の開始位置)
     for pos, kind, val in events:
         if kind == "file":
             current_file = val
@@ -80,11 +120,17 @@ def parse_items(section_text: str) -> list[dict]:
 
 def _finish_item(pending, body_after_marker: str) -> dict:
     file_path, m, _ = pending
-    line_range, tags = m.group(1), m.group(2)
+    if m.group(1):
+        line_range, tags = m.group(1), m.group(2)
+    else:
+        file_path, line_range, tags = m.group(3), m.group(4), m.group(5)
     fp = FINGERPRINT_RE.search(body_after_marker)
-    title_m = TITLE_RE.search(body_after_marker)
+    # 見出しは ITEM_RE が読んだ行より後ろから探す。太字形式の観点の行も行頭の太字で始まるため、
+    # 先頭から探すと観点を見出しと取り違える。
+    after = body_after_marker[m.end() - m.start() :]
+    title_m = TITLE_RE.search(after)
     sev_m = SEVERITY_RE.search(tags)
-    title = title_m.group(1).strip() if title_m else body_after_marker.strip().splitlines()[0][:80]
+    title = title_m.group(1).strip() if title_m else (after.strip().splitlines() or [""])[0][:80]
     return {
         "path": file_path or "(unknown)",
         "line": line_range,
